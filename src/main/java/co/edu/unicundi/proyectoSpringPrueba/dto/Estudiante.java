@@ -1,9 +1,12 @@
 package co.edu.unicundi.proyectoSpringPrueba.dto;
 
+import javax.validation.constraints.NotNull;
+
 import co.edu.unicundi.proyectoSpringPrueba.service.Interface.IUniversidad;
 
 public class Estudiante {
 
+	@NotNull
 	private Integer id;
 	
 	private String nombre;

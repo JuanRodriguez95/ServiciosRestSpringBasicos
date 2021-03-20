@@ -2,11 +2,14 @@ package co.edu.unicundi.proyectoSpringPrueba.service.imp;
 
 import java.util.ArrayList;
 
-
 import org.springframework.stereotype.Service;
 
 import co.edu.unicundi.proyectoSpringPrueba.dto.Profesor;
 import co.edu.unicundi.proyectoSpringPrueba.dto.Respuesta;
+import co.edu.unicundi.proyectoSpringPrueba.exception.HttpMediaTypeNotAcceptableException;
+import co.edu.unicundi.proyectoSpringPrueba.exception.HttpMediaTypeNotSupportedException;
+import co.edu.unicundi.proyectoSpringPrueba.exception.ModelNotFoundException;
+import co.edu.unicundi.proyectoSpringPrueba.exception.NotSupportedException;
 import co.edu.unicundi.proyectoSpringPrueba.service.Interface.IProfesorService;
 
 @Service
@@ -31,21 +34,15 @@ public class ProfesorServiceImp implements IProfesorService{
 	}
 	
 	@Override
-	public Respuesta traerProfesorPorcedula(Double cedula) {
+	public Respuesta traerProfesorPorcedula(Double cedula)throws ModelNotFoundException {
 		Respuesta respuesta=null;
-		try{
-
 			for (Profesor obj : lista) {
 				if(obj.getCedula()==cedula) {
-					respuesta = new Respuesta("Registro encontrado", obj,200);
-					return respuesta;
+					respuesta = new Respuesta("Registro encontrado", obj,200);					
 				}
 			}
-			//Profesor respuesta = new Profesor(0," El profesor no se encuentra registrado "," ");
-			respuesta = new Respuesta("Registro no encontrado", null ,404);
-		}catch(Exception ex){
-			respuesta = new Respuesta("Solicitud Erronea",null,400);
-		}
+			if(cedula==0)
+				throw new ModelNotFoundException("Error ----------- el objeto no se encontro");
 		return respuesta;
 	}
 
@@ -57,15 +54,13 @@ public class ProfesorServiceImp implements IProfesorService{
 		}else {
 			Respuesta respuesta = new Respuesta("No hay resgistros en la lista",null,204);
 			return respuesta;
-		}
-		
-		
+		}		
 	}
 
 	@Override
-	public Respuesta guardarProfesor(Profesor profesor) {
+	public Respuesta guardarProfesor(Profesor profesor)throws HttpMediaTypeNotSupportedException {
 		Respuesta respuesta=null;
-		try{
+		
 			for (Profesor profe : lista) {
 				if(profe.getCedula()==profesor.getCedula()) {
 					respuesta = new Respuesta("ya existe un registro con la cedula ingresada", null ,200);
@@ -79,9 +74,8 @@ public class ProfesorServiceImp implements IProfesorService{
 			}	
 				this.lista.add(profesor);
 			respuesta = new Respuesta("Profesor guardado", profesor.getId(),201);
-		}catch(Exception ex){
-			respuesta = new Respuesta("Solicitud Erronea",null,400);
-		}
+		
+		
 		return respuesta;
 	}
 
@@ -90,7 +84,7 @@ public class ProfesorServiceImp implements IProfesorService{
 	public Respuesta editarProfesor(Profesor profesor,Integer id) {
 		boolean bandera=true;
 		Respuesta respuesta=null;
-		try{
+		
 			for (Profesor obj : lista) {
 				if(obj.getCedula()==profesor.getCedula()){
 					bandera=false;
@@ -108,15 +102,12 @@ public class ProfesorServiceImp implements IProfesorService{
 						return respuesta;
 					}else{
 						respuesta = new Respuesta("El id no existe", null,404);
-						//return respuesta;
 					}
 				}
 			}else{
-				respuesta = new Respuesta("la cedula ya esta registrada", null,200);
+				respuesta = new Respuesta("la cedula ya esta registrada", null,409);
 			}
-		}catch(Exception ex){
-			respuesta = new Respuesta("Solicitud Erronea",null,400);
-		}		
+				
 		return respuesta;
 	}
 
@@ -126,7 +117,6 @@ public class ProfesorServiceImp implements IProfesorService{
 			int cont=0;
 			Respuesta respuesta=null;
 			boolean bandera=false;
-			try{
 				for (Profesor profesor : lista) {
 					if(profesor.getId()==id) {
 						cont=lista.indexOf(profesor);
@@ -140,9 +130,6 @@ public class ProfesorServiceImp implements IProfesorService{
 					this.lista.remove(cont);
 					respuesta = new Respuesta("Registro eliminado", null ,204 );
 				}
-			}catch(Exception ex){
-				respuesta = new Respuesta("Solicitud Erronea",null,400);
-			}	
 			return respuesta;
 	}
 

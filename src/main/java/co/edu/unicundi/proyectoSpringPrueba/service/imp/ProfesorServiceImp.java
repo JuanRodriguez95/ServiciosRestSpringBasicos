@@ -3,14 +3,17 @@ package co.edu.unicundi.proyectoSpringPrueba.service.imp;
 import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 import co.edu.unicundi.proyectoSpringPrueba.dto.Profesor;
 import co.edu.unicundi.proyectoSpringPrueba.dto.Respuesta;
+import co.edu.unicundi.proyectoSpringPrueba.exception.ConflictException;
 import co.edu.unicundi.proyectoSpringPrueba.exception.HttpMediaTypeNotAcceptableException;
-import co.edu.unicundi.proyectoSpringPrueba.exception.HttpMediaTypeNotSupportedException;
+
 import co.edu.unicundi.proyectoSpringPrueba.exception.ModelNotFoundException;
-import co.edu.unicundi.proyectoSpringPrueba.exception.NotSupportedException;
+
 import co.edu.unicundi.proyectoSpringPrueba.service.Interface.IProfesorService;
+import springfox.documentation.schema.Model;
 
 @Service
 public class ProfesorServiceImp implements IProfesorService{
@@ -34,20 +37,24 @@ public class ProfesorServiceImp implements IProfesorService{
 	}
 	
 	@Override
-	public Respuesta traerProfesorPorcedula(Double cedula)throws ModelNotFoundException {
-		Respuesta respuesta=null;
+	public Profesor traerProfesorPorcedula(Double cedula)throws ModelNotFoundException {
+		Profesor profesor=null;
+		boolean bandera=true;
 			for (Profesor obj : lista) {
 				if(obj.getCedula()==cedula) {
-					respuesta = new Respuesta("Registro encontrado", obj,200);					
+				    profesor = obj;	
+					return obj;			
 				}
+			}	
+			if(profesor==null){
+				throw new ModelNotFoundException("El registro solicitado no se encuentra en la base de datos");
 			}
-			if(cedula==0)
-				throw new ModelNotFoundException("Error ----------- el objeto no se encontro");
-		return respuesta;
+		return profesor;
 	}
 
 	@Override
 	public Respuesta traerProfesores() {
+		//return this.lista;
 		if(!this.lista.isEmpty()) {
 			Respuesta respuesta = new Respuesta("Registro encontrado", this.lista,200);
 			return respuesta;
@@ -58,13 +65,10 @@ public class ProfesorServiceImp implements IProfesorService{
 	}
 
 	@Override
-	public Respuesta guardarProfesor(Profesor profesor)throws HttpMediaTypeNotSupportedException {
-		Respuesta respuesta=null;
-		
+	public Profesor guardarProfesor(Profesor profesor) throws ConflictException {
 			for (Profesor profe : lista) {
 				if(profe.getCedula()==profesor.getCedula()) {
-					respuesta = new Respuesta("ya existe un registro con la cedula ingresada", null ,200);
-					return respuesta;
+					throw new ConflictException("la cedula ingresada ya se encuentra registrada en la base de datos");
 				}
 			}
 			if(!this.lista.isEmpty()){
@@ -73,50 +77,41 @@ public class ProfesorServiceImp implements IProfesorService{
 				profesor.setId(1);
 			}	
 				this.lista.add(profesor);
-			respuesta = new Respuesta("Profesor guardado", profesor.getId(),201);
+		return profesor;
 		
-		
-		return respuesta;
 	}
 
 	
 	@Override
-	public Respuesta editarProfesor(Profesor profesor,Integer id) {
+	public Profesor editarProfesor(Profesor profesor,Integer id)throws ConflictException,ModelNotFoundException {
 		boolean bandera=true;
-		Respuesta respuesta=null;
-		
+		Profesor profesorAux = null;
 			for (Profesor obj : lista) {
 				if(obj.getCedula()==profesor.getCedula()){
-					bandera=false;
+					throw new ConflictException("La cedula ingresada ya se encuentra registrada en la base datos");
 				}
 			}
-			if(bandera){
-				for (Profesor proOri : lista) {
-					System.out.println(proOri.getId());
-					System.out.println(id);
-					if(proOri.getId()==id) {
-						proOri.setNombre(profesor.getNombre());
-						proOri.setApellido(profesor.getApellido());	
-						proOri.setCedula(profesor.getCedula());
-						respuesta = new Respuesta("Registro editado", proOri,200);
-						return respuesta;
-					}else{
-						respuesta = new Respuesta("El id no existe", null,404);
-					}
+			for(Profesor proOri : lista){
+				if(proOri.getId()==id) {
+					proOri.setNombre(profesor.getNombre());
+					proOri.setApellido(profesor.getApellido());	
+					proOri.setCedula(profesor.getCedula());
+					profesorAux=proOri;		
+					return profesorAux;		
 				}
-			}else{
-				respuesta = new Respuesta("la cedula ya esta registrada", null,409);
 			}
-				
-		return respuesta;
+			if(profesorAux==null)
+				throw new ModelNotFoundException("El id ingresado no existe en la base de datos");			
+		return profesorAux;
 	}
 
 	@Override
-	public Respuesta eliminarProfesor(Integer id) {
+	public Profesor eliminarProfesor(Integer id) throws ModelNotFoundException{
 		
 			int cont=0;
 			Respuesta respuesta=null;
 			boolean bandera=false;
+			Profesor profe = null;
 				for (Profesor profesor : lista) {
 					if(profesor.getId()==id) {
 						cont=lista.indexOf(profesor);
@@ -125,12 +120,11 @@ public class ProfesorServiceImp implements IProfesorService{
 					}
 				}
 				if(bandera==false) {
-					respuesta = new Respuesta("Id no encontrado", null ,404 );
+					throw new ModelNotFoundException("el id no existe en la base de datos");
 				}else {
 					this.lista.remove(cont);
-					respuesta = new Respuesta("Registro eliminado", null ,204 );
 				}
-			return respuesta;
+			return profe;
 	}
 
 }

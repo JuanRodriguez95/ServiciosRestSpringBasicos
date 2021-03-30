@@ -1,14 +1,21 @@
 package co.edu.unicundi.proyectoSpringPrueba.exception;
 
-public class BadRequestException extends Exception{
+import org.springframework.web.context.request.ServletWebRequest;
+
+public class ConflictException extends Exception {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
     
-    public BadRequestException(String message){
+     
+
+    public ConflictException(String message){
         super(message);
         
     }
+
+  
+
 }

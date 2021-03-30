@@ -10,7 +10,7 @@ public class ExceptionResponse {
     private String timestamp;
 	
     @ApiModelProperty(position = 0,notes = "Codigo de estado para la excepcion lanzada")
-	private String status;
+	private int status;
 	
     @ApiModelProperty(position = 1,notes = "Nombre del error")
 	private String error;
@@ -21,7 +21,7 @@ public class ExceptionResponse {
     @ApiModelProperty(position = 4,notes = "Url en la que ocurrio el error especificado")
 	private String path;
 
-	public ExceptionResponse(String status, String error, String message, String path) {
+	public ExceptionResponse(int status, String error, String message, String path) {
 		super();
 		this.timestamp = LocalDateTime.now().toString();
 		this.status = status;
@@ -38,11 +38,11 @@ public class ExceptionResponse {
 		this.timestamp = timestamp;
 	}
 
-	public String getStatus() {
+	public int getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(int status) {
 		this.status = status;
 	}
 

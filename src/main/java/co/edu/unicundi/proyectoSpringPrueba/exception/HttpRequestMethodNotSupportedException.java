@@ -1,6 +1,6 @@
 package co.edu.unicundi.proyectoSpringPrueba.exception;
 
-public class WebApplicationException extends Exception{
+public class HttpRequestMethodNotSupportedException extends Exception{
 
     /**
      *
@@ -8,8 +8,8 @@ public class WebApplicationException extends Exception{
     private static final long serialVersionUID = 1L;
     
 
-    public WebApplicationException(String message){
+    public HttpRequestMethodNotSupportedException(String message){
         super(message);
-        
     }
+
 }

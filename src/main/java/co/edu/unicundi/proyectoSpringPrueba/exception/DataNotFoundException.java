@@ -1,15 +1,15 @@
 package co.edu.unicundi.proyectoSpringPrueba.exception;
 
-public class NotAllowedException extends Exception{
+public class DataNotFoundException extends Exception {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
     
-    public NotAllowedException(String message){
+
+    public DataNotFoundException(String message){
         super(message);
-        
     }
 
 }

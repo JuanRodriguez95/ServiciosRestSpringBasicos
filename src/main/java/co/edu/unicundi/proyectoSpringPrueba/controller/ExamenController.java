@@ -48,7 +48,7 @@ public class ExamenController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@DeleteMapping("/eliminar/{id}")
+	@DeleteMapping("/eliminar/{idExamen}")
 	public ResponseEntity<?> eliminarExamen(@PathVariable Integer idExamen) throws ModelNotFoundException {
 		service.eliminar(idExamen);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);

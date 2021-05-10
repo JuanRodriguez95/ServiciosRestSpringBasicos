@@ -13,7 +13,7 @@ import co.edu.unicundi.proyectoSpringPrueba.view.VistaMedicos;
 
 public interface IConsultaExamenService extends ICrud<ConsultaExamen, Integer> {
 
-	public void guardarNativo(ConsultaExamen consultaExamen);
+	public void guardarNativo(ConsultaExamen consultaExamen)throws ModelNotFoundException;
 	
 	ConsultaExamenes listarPorIdCosnulta(Integer idConsulta,Boolean bandera)throws ModelNotFoundException,EmptyListException;
 	

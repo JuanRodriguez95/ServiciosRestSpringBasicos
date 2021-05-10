@@ -56,8 +56,13 @@ public class ConsultaExamenServiceImpl implements IConsultaExamenService {
 	}
 
 	@Override
-	public void guardarNativo(ConsultaExamen consultaExamen) {
-		//repo.guardar(consultaExamen.getConsulta().getId(), consultaExamen.getExamen().getId(), consultaExamen.getInfoAdicional());
+	public void guardarNativo(ConsultaExamen consultaExamen) throws ModelNotFoundException {
+		if(repoConsulta.buscarPorId(consultaExamen.getConsulta().getId())<=0)
+				throw new ModelNotFoundException("la consulta solicitada no tiene examenes asociados o directamente no existe en la base de datos");
+		
+		if(repoExamen.traerExamenId(consultaExamen.getExamen().getId())<=0)
+				throw new ModelNotFoundException("el examen solicitado no tiene consultas asociadas o directamente no existe en la base de datos");	
+		repo.guardar(consultaExamen.getConsulta().getId(), consultaExamen.getExamen().getId(), consultaExamen.getInfoAdicional());
 	}
 
 	@Override

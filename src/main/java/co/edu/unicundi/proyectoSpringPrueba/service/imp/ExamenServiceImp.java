@@ -38,6 +38,7 @@ public class ExamenServiceImp implements IExamenService {
         examenAux.setDescripcion(examen.getDescripcion());
         examenAux.setNombre(examen.getNombre());
         examenAux.setPreparacion(examen.getPreparacion());
+        repo.save(examenAux);
     }
 
     @Override

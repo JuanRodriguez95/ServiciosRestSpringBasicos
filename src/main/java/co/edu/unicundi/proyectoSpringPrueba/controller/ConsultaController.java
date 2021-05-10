@@ -111,9 +111,9 @@ public class ConsultaController {
 	
 	
 	@PostMapping("/guardarCE")
-	public ResponseEntity<?> guardarCE(@Valid @RequestBody ConsultaExamenDto consulta)
+	public ResponseEntity<?> guardarCE(@Valid @RequestBody ConsultaExamen consulta)
 			throws ModelNotFoundException {
-			serviceCE.recepcionDatos(consulta);
+			serviceCE.guardarNativo(consulta);
 			return new ResponseEntity<Object>("", HttpStatus.CREATED);				
 	}
 	

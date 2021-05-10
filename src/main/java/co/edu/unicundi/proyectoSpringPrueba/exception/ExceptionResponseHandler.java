@@ -1,18 +1,25 @@
 package co.edu.unicundi.proyectoSpringPrueba.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletResponse;
 
-import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 //import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -100,4 +107,50 @@ public class ExceptionResponseHandler extends ResponseEntityExceptionHandler{
        ExceptionResponse exp = new ExceptionResponse(status.value(),status.name(),"Error interno en el servidor",((ServletWebRequest)request).getRequest().getRequestURI().toString());
        return new ResponseEntity<>(exp,HttpStatus.INTERNAL_SERVER_ERROR);
    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                Map<String, String> errors = new HashMap<>();              
+                for (ObjectError error : ex.getBindingResult().getAllErrors()) {
+                    String fieldName = ((FieldError) error).getField();
+                    String errorMessage = error.getDefaultMessage();
+                    errors.put(fieldName, errorMessage);
+                }         
+                
+                ExceptionResponse exp = new ExceptionResponse(status.value(),status.name(),errors,((ServletWebRequest)request).getRequest().getRequestURI().toString()); 
+                return new ResponseEntity<>(exp,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> conflict(DataIntegrityViolationException e,WebRequest  request) {
+        ExceptionResponse exp = new ExceptionResponse(HttpStatus.CONFLICT.value(), HttpStatus.CONFLICT.name(),NestedExceptionUtils.getMostSpecificCause(e).getMessage(),((ServletWebRequest)request).getRequest().getRequestURI().toString());
+        return new ResponseEntity<>(exp,HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(EmptyListException.class)
+    public ResponseEntity<ExceptionResponse> filtroEmptyListException(EmptyListException ex, WebRequest  request){   
+        ExceptionResponse exp = new ExceptionResponse(HttpStatus.NO_CONTENT.value(), HttpStatus.NO_CONTENT.name(),ex.getMessage(),((ServletWebRequest)request).getRequest().getRequestURI().toString());
+        return new ResponseEntity<>(exp,HttpStatus.NO_CONTENT);
+    }
+
+
+    @ExceptionHandler(PageException.class)
+    public ResponseEntity<ExceptionResponse> filtroPageException(PageException ex, WebRequest  request){   
+        ExceptionResponse exp = new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.name(),ex.getMessage(),((ServletWebRequest)request).getRequest().getRequestURI().toString());
+        return new ResponseEntity<>(exp,HttpStatus.BAD_REQUEST);
+    }
+/*
+    @ExceptionHandler(DataNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> filtroDataNotFound(DataNotFoundException ex, WebRequest  request){   
+        ExceptionResponse exp = new ExceptionResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.name(),ex.getMessage(),((ServletWebRequest)request).getRequest().getRequestURI().toString());
+        return new ResponseEntity<>(exp,HttpStatus.NOT_FOUND);
+    }
+    */
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> filtroOrderNotFound(OrderNotFoundException ex, WebRequest  request){   
+        ExceptionResponse exp = new ExceptionResponse(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND.name(),ex.getMessage(),((ServletWebRequest)request).getRequest().getRequestURI().toString());
+        return new ResponseEntity<>(exp,HttpStatus.NOT_FOUND);
+    }
 }

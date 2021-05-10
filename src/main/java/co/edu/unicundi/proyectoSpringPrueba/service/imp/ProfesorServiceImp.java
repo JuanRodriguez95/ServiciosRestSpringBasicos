@@ -1,130 +1,111 @@
 package co.edu.unicundi.proyectoSpringPrueba.service.imp;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.transaction.annotation.Transactional;
 
-import co.edu.unicundi.proyectoSpringPrueba.dto.Profesor;
+import co.edu.unicundi.proyectoSpringPrueba.entity.Profesor;
+//import co.edu.unicundi.proyectoSpringPrueba.dto.Profesor;
 import co.edu.unicundi.proyectoSpringPrueba.dto.Respuesta;
 import co.edu.unicundi.proyectoSpringPrueba.exception.ConflictException;
-import co.edu.unicundi.proyectoSpringPrueba.exception.HttpMediaTypeNotAcceptableException;
-
+import co.edu.unicundi.proyectoSpringPrueba.exception.EmptyListException;
 import co.edu.unicundi.proyectoSpringPrueba.exception.ModelNotFoundException;
-
+import co.edu.unicundi.proyectoSpringPrueba.repository.IProfesorRepo;
 import co.edu.unicundi.proyectoSpringPrueba.service.Interface.IProfesorService;
-import springfox.documentation.schema.Model;
 
 @Service
 public class ProfesorServiceImp implements IProfesorService{
 
-	ArrayList<Profesor> lista = new ArrayList<Profesor>();
-	ArrayList<Profesor> listaVacia = new ArrayList<Profesor>();
+	@Autowired
+	private IProfesorRepo profesorRepo;
 
-	public ProfesorServiceImp() {
-		llenar();
-	}
-	
-	public void llenar() {
-		Profesor pv = new Profesor(0,"Lista vacia","Sin datos",1074188);
-		Profesor p1 = new Profesor(1,"Pepe","Rodriguez",1074189);
-		Profesor p2 = new Profesor(2,"Jose","Contreras",1074190);
-		Profesor p3 = new Profesor(3,"Pablo","Mocho",1074191);
-		this.lista.add(p1);
-		this.lista.add(p2);
-		this.lista.add(p3);
-		this.listaVacia.add(pv);
-	}
+
 	
 	@Override
-	public Profesor traerProfesorPorcedula(Double cedula)throws ModelNotFoundException {
+	public Profesor traerProfesorPorcedula(String cedula)throws ModelNotFoundException {
 		Profesor profesor=null;
-		boolean bandera=true;
-			for (Profesor obj : lista) {
-				if(obj.getCedula()==cedula) {
-				    profesor = obj;	
-					return obj;			
-				}
-			}	
-			if(profesor==null){
-				throw new ModelNotFoundException("El registro solicitado no se encuentra en la base de datos");
-			}
+		//profesor=this.profesorRepo.findBycedula(cedula);
+		//profesor=this.profesorRepo.buscarPorcedulaJPQL(cedula);
+		profesor=this.profesorRepo.buscarPorcedulaSQL(cedula);
+		//if(profesor==null){
+		//	throw new ModelNotFoundException("La cedula solicitada no se encuentra registrada");
+		//}
 		return profesor;
 	}
 
 	@Override
-	public Respuesta traerProfesores() {
-		//return this.lista;
-		if(!this.lista.isEmpty()) {
-			Respuesta respuesta = new Respuesta("Registro encontrado", this.lista,200);
-			return respuesta;
-		}else {
-			Respuesta respuesta = new Respuesta("No hay resgistros en la lista",null,204);
-			return respuesta;
+	public Page<Profesor> traerProfesores(int pagina, int registros,String orden,String tipo) throws EmptyListException {
+		Page<Profesor> listaOrdenada = null;
+		System.out.println(pagina+"-"+registros+"-"+orden+"-"+tipo);
+		if(this.profesorRepo.findAll().isEmpty())
+			throw new EmptyListException("Lista Vacia.... no existen resgitros en la base de datos");
+		if((validarOrden(orden))){
+			if(tipo.equals("ASD")){
+			System.out.println("entre a asd");
+				listaOrdenada= this.profesorRepo.findAll(PageRequest.of(pagina, registros, Sort.Direction.ASC,orden));
+			}
+
+			if(tipo.equals("DSD"))	{
+			    System.out.println("entre a dsd");
+				listaOrdenada= this.profesorRepo.findAll(PageRequest.of(pagina, registros, Sort.Direction.DESC,orden));
+			}
 		}		
+		return listaOrdenada;
 	}
 
 	@Override
-	public Profesor guardarProfesor(Profesor profesor) throws ConflictException {
-			for (Profesor profe : lista) {
-				if(profe.getCedula()==profesor.getCedula()) {
-					throw new ConflictException("la cedula ingresada ya se encuentra registrada en la base de datos");
-				}
-			}
-			if(!this.lista.isEmpty()){
-				profesor.setId(this.lista.get(this.lista.size()-1).getId()+1);
-			}else{
-				profesor.setId(1);
-			}	
-				this.lista.add(profesor);
-		return profesor;
-		
+	public Profesor guardarProfesor(Profesor profesor) throws ConflictException, ModelNotFoundException {
+		Profesor profe = this.traerProfesorPorcedula(profesor.getCedula());
+		if(profe != null){
+			throw new ConflictException("La cedula ya se encuentra registrada en la base de datos");
+		}			
+		this.profesorRepo.save(profesor);
+		return profesor;	
 	}
 
 	
 	@Override
-	public Profesor editarProfesor(Profesor profesor,Integer id)throws ConflictException,ModelNotFoundException {
-		boolean bandera=true;
-		Profesor profesorAux = null;
-			for (Profesor obj : lista) {
-				if(obj.getCedula()==profesor.getCedula()){
-					throw new ConflictException("La cedula ingresada ya se encuentra registrada en la base datos");
-				}
-			}
-			for(Profesor proOri : lista){
-				if(proOri.getId()==id) {
-					proOri.setNombre(profesor.getNombre());
-					proOri.setApellido(profesor.getApellido());	
-					proOri.setCedula(profesor.getCedula());
-					profesorAux=proOri;		
-					return profesorAux;		
-				}
-			}
-			if(profesorAux==null)
-				throw new ModelNotFoundException("El id ingresado no existe en la base de datos");			
-		return profesorAux;
+	public Profesor editarProfesor(Profesor profesor,Integer id)throws ConflictException,ModelNotFoundException {		
+		Profesor profesoraux = this.traerPorId(id);	
+			profesoraux.setNombre(profesor.getNombre());
+			profesoraux.setApellido(profesor.getApellido());
+			profesoraux.setCorreo(profesor.getCorreo());
+			profesoraux.setEdad(profesor.getEdad());						
+		return this.profesorRepo.save(profesoraux);
 	}
 
 	@Override
-	public Profesor eliminarProfesor(Integer id) throws ModelNotFoundException{
-		
-			int cont=0;
-			Respuesta respuesta=null;
-			boolean bandera=false;
-			Profesor profe = null;
-				for (Profesor profesor : lista) {
-					if(profesor.getId()==id) {
-						cont=lista.indexOf(profesor);
-						System.out.println(cont);
-						bandera=true;
-					}
-				}
-				if(bandera==false) {
-					throw new ModelNotFoundException("el id no existe en la base de datos");
-				}else {
-					this.lista.remove(cont);
-				}
-			return profe;
+	public void eliminarProfesor(Integer id) throws ModelNotFoundException{		
+		int idProfesor = this.profesorRepo.buscarPorId(id);
+		if(idProfesor<=0)
+			throw new ModelNotFoundException("el resgitro con el id solicitado no existe");
+		this.profesorRepo.deleteById(id);
 	}
 
+	@Override
+	public Profesor traerPorId(Integer id) throws ModelNotFoundException {				
+		Profesor profesor = profesorRepo.findById(id).orElseThrow(()-> new ModelNotFoundException("el registro con el id solicitado no existe"));
+		return profesor;
+	}
+
+
+	public boolean validarOrden(String orden){
+		System.out.print("Entre a validar orden");
+		if(((orden.equals("nombre"))||(orden.equals("apellido"))||(orden.equals("cedula"))||(orden.equals("edad")))){
+			System.out.print("True");
+			return true;
+		}else{
+			System.out.print("False");
+			return false;
+		}
+
+	}
 }

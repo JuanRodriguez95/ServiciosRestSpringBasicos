@@ -16,12 +16,12 @@ public class ExceptionResponse {
 	private String error;
 	
     @ApiModelProperty(position = 2,notes = "Mensaje especifico de error")
-	private String message;
+	private Object message;
 	
     @ApiModelProperty(position = 4,notes = "Url en la que ocurrio el error especificado")
 	private String path;
 
-	public ExceptionResponse(int status, String error, String message, String path) {
+	public ExceptionResponse(int status, String error, Object message, String path) {
 		super();
 		this.timestamp = LocalDateTime.now().toString();
 		this.status = status;
@@ -54,11 +54,11 @@ public class ExceptionResponse {
 		this.error = error;
 	}
 
-	public String getMessage() {
+	public Object getMessage() {
 		return message;
 	}
 
-	public void setMessage(String message) {
+	public void setMessage(Object message) {
 		this.message = message;
 	}
 

@@ -110,5 +110,11 @@ public class MedicoController {
         return new ResponseEntity<Page<Medico>>(lista,HttpStatus.OK);
     }
 
+    @GetMapping("/pruebaJenkins/{nombre}")
+    public ResponseEntity<?> pruebaJenkins(@PathVariable String nombre)
+            throws EmptyListException, OrderNotFoundException {
+        String saludo = "HOLA "+ nombre+" Bienvenido ";
+        return new ResponseEntity<String>("",HttpStatus.OK);
+    }
 
 }

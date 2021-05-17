@@ -114,7 +114,7 @@ public class MedicoController {
     public ResponseEntity<?> pruebaJenkins(@PathVariable String nombre)
             throws EmptyListException, OrderNotFoundException {
         String saludo = "HOLA "+ nombre+" Bienvenido ";
-        return new ResponseEntity<String>("",HttpStatus.OK);
+        return new ResponseEntity<String>(saludo,HttpStatus.OK);
     }
 
 }

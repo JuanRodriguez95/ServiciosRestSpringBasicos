@@ -110,7 +110,7 @@ public class MedicoController {
         return new ResponseEntity<Page<Medico>>(lista,HttpStatus.OK);
     }
 
-    @GetMapping("/pruebaJenkins/{nombre}")
+    @GetMapping("/pruebaJenkins/{nombre}/{edad}/{ciudad}")
     public ResponseEntity<?> pruebaJenkins(@PathVariable String nombre,@PathVariable Integer edad,@PathVariable String ciudad)
             throws EmptyListException, OrderNotFoundException {
         String saludo = "HOLA "+ nombre+" Bienvenido; "+"Tienes "+ edad + " años ; y vives en "+ciudad+" ";

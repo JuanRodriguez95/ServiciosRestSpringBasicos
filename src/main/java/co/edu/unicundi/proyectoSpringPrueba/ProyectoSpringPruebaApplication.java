@@ -15,10 +15,12 @@ public class ProyectoSpringPruebaApplication extends SpringBootServletInitialize
 		SpringApplication.run(ProyectoSpringPruebaApplication.class, args);
 	}
 
+	
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 	return application.sources(ProyectoSpringPruebaApplication.class);
 	}
+	
 }
 
 /*
